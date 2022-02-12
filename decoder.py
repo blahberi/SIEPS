@@ -8,23 +8,37 @@ EOF_binary = "00111100001000010100010101001111010001100010000100111110" # <!EOF!
 res = ""
 binary = ""
 done = False
-for row in image_matrix:
-    for pixel in row:
-        rgb = pixel[2], pixel[1], pixel[0]
-        if np.array_equal(pixel, image_matrix[0][0]):
-            k = str(pixel[2]) + str(pixel[1]) + str(pixel[0])
-            k = int(k, 2)
-        else:
+mode = input("is it encoded using the (b)ad method or the (g)ood method? ")
+if mode == "g":
+    for row in image_matrix:
+        for pixel in row:
+            rgb = pixel[2], pixel[1], pixel[0]
+            if np.array_equal(pixel, image_matrix[0][0]):
+                k = str(pixel[2]) + str(pixel[1]) + str(pixel[0])
+                k = int(k, 2)
+            else:
+                for color in rgb:
+                    binary += np.binary_repr(color)[-k:]
+                    if binary[-len(EOF_binary):] == EOF_binary:
+                        done = True
+                        break
+            if done:
+                break
+        if done:
+            break
+if mode == "b":
+    for row in image_matrix:
+        for pixel in row:
+            rgb = pixel[2], pixel[1], pixel[0]
             for color in rgb:
-                binary += np.binary_repr(color)[-k:]
+                binary += np.binary_repr(color)[-1:]
                 if binary[-len(EOF_binary):] == EOF_binary:
                     done = True
                     break
+            if done:
+                break
         if done:
             break
-    if done:
-        break
-
 if not done:
     print("Warning: no EOF found")
 
