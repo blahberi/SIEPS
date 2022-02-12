@@ -40,9 +40,9 @@ bin_k = np.binary_repr(k)
 
 while len(bin_k) < 3:
     bin_k = "0" + bin_k
-image_matrix[0][0][2] = bin_k[0]
-image_matrix[0][0][1] = bin_k[1]
-image_matrix[0][0][0] = bin_k[2]
+image_matrix[0][0][2] = str(image_matrix[0][0][2])[:-1] + str(bin_k[0])
+image_matrix[0][0][1] = str(image_matrix[0][0][1])[:-1] + str(bin_k[1])
+image_matrix[0][0][0] = str(image_matrix[0][0][0])[:-1] + str(bin_k[2])
 
 for i in range(1, len(binary_text) + 1):
     r = list(np.binary_repr(image_matrix[i // len(image_matrix[0])][i % len(image_matrix[0])][2]))

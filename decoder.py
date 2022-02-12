@@ -14,7 +14,7 @@ if mode == "g":
         for pixel in row:
             rgb = pixel[2], pixel[1], pixel[0]
             if np.array_equal(pixel, image_matrix[0][0]):
-                k = str(pixel[2]) + str(pixel[1]) + str(pixel[0])
+                k = str(pixel[2])[-1] + str(pixel[1])[-1] + str(pixel[0])[-1]
                 k = int(k, 2)
             else:
                 for color in rgb:
@@ -58,3 +58,4 @@ if len(split) == 2:
         f.write(bytes(split[1][:-len(EOF)], "latin1"))
     if not done:
         f.write(bytes(split[1], "latin1"))
+f.close()
