@@ -1,14 +1,21 @@
 import cv2
 import numpy as np
+import base64
 
 EOF = "<!EOF!>"
 EOF_binary = "00111100001000010100010101001111010001100010000100111110" # <!EOF!> in binary
 
 class LSB:
     @staticmethod
-    def encode(text, image):
-        text += "<!EOF!>"
-        binary_text = list(format(ord(x), 'b') for x in text)
+    def encode(text, image, encoding="ascii"):
+        binary_text = ""
+        if encoding == "ascii":
+            binary_text = list(format(ord(x), 'b') for x in text)
+        elif encoding == "base64":
+            binary = base64.b64decode(text)
+            binary_text = ["{:08b}".format(x) for x in binary]
+        else:
+            return
 
         for byte in range(len(binary_text)):
             for i in range(8 - len(binary_text[byte])):
@@ -16,7 +23,7 @@ class LSB:
                 byte_list.insert(0, "0")
                 binary_text[byte] = "".join(byte_list)
 
-        binary_text = "".join(binary_text)
+        binary_text = "".join(binary_text)+EOF_binary
         binary_text = [binary_text[start:start + 3] for start in range(0, len(binary_text), 3)]
 
         image_matrix = cv2.imread(image)
@@ -44,7 +51,7 @@ class LSB:
         cv2.imwrite("output.png", image_matrix)
 
     @staticmethod
-    def decode(image):
+    def decode(image, encoding="ascii"):
         image_matrix = cv2.imread(image)
         res = ""
         binary = ""
@@ -63,8 +70,13 @@ class LSB:
             if done:
                 break
 
-        binary = [binary[i:i + 8] for i in range(0, len(binary), 8)]
         res = ""
-        for byte in binary:
-            res += chr((int(byte, 2)))
-        return res[:-len(EOF)]
+        binary = binary[:-len(EOF_binary)]
+        if encoding == "ascii":
+            binary = [binary[i:i + 8] for i in range(0, len(binary), 8)]
+            for byte in binary:
+                res += chr((int(byte, 2)))
+        elif encoding == "base64":
+            bytes = int(binary, 2).to_bytes(len(binary) // 8, byteorder='big')
+            res = base64.b64encode(bytes).decode()
+        return res
