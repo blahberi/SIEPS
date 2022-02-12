@@ -1,0 +1,1 @@
+from steganography.lsb import LSB
