@@ -1,17 +1,40 @@
 import cv2
 import numpy as np
+from Crypto.Cipher import AES
+from Crypto.Random import get_random_bytes
+import base64
 
 image = input("image: ")
 mode = input("do you want to encode a (f)ile or (t)ext? ")
+mode2 = input("do you want to encrypt (y or n)? ")
 if mode == "f":
-    file = input("file to encode: ")
-    f = open(file, "rb")
-    t = file.split(".")[-1]
-    text = t + " split " + f.read().decode("latin-1") + "<!EOF!>"
-    f.close()
+    if mode2 == "n":
+        file = input("file to encode: ")
+        f = open(file, "rb")
+        t = file.split(".")[-1]
+        text = t + " split " + f.read().decode("latin-1") + "<!EOF!>"
+        f.close()
+    elif mode2 == "y":
+        file = input("file to encode: ")
+        f = open(file, "rb")
+        t = file.split(".")[-1]
+        key = get_random_bytes(16)
+        plaintext = (t + " split " + f.read().decode("latin-1")).encode("utf-8")
+        print("key: ", base64.b64encode(key).decode())
+        cipher = AES.new(key, AES.MODE_EAX)
+        ciphered_data, tag = cipher.encrypt_and_digest(plaintext)
+        text = " encrypted " + cipher.nonce.decode("latin-1") + " split2 " + tag.decode("latin-1") + " split2 " + ciphered_data.decode("latin-1") + "<!EOF!>"
 if mode == "t":
-    text = input("text: ") + "<!EOF!>"
-if mode != "f" and mode != "t":
+    if mode2 == "n":
+        text = input("text: ") + "<!EOF!>"
+    elif mode2 == "y":
+        plain_text = input("text: ").encode("utf-8")
+        key = get_random_bytes(16)
+        print("key: ", base64.b64encode(key).decode())
+        cipher = AES.new(key, AES.MODE_EAX)
+        ciphered_data, tag = cipher.encrypt_and_digest(plain_text)
+        text = " encrypted " + cipher.nonce.decode("latin-1") + " split2 " + tag.decode("latin-1") + " split2 " + ciphered_data.decode("latin-1") + "<!EOF!>"
+if (mode != "f" and mode != "t") or (mode2 != "y" and mode2 != "n"):
     print("Error: no mode specified")
 
 binary_text = list(format(ord(x), 'b')for x in text)
