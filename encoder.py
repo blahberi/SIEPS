@@ -2,7 +2,17 @@ import cv2
 import numpy as np
 
 image = input("image: ")
-text = input("text: ")+"<!EOF!>"
+mode = input("do you want to encode a (f)ile or (t)ext? ")
+if mode == "f":
+    file = input("file to encode: ")
+    f = open(file, "rb")
+    t = file.split(".")[-1]
+    text = t + " split " + f.read().decode("latin1") + "<!EOF!>"
+    f.close()
+if mode == "t":
+    text = input("text: ") + "<!EOF!>"
+if mode != "f" and mode != "t":
+    print("Error: no mode specified")
 
 binary_text = list(format(ord(x), 'b')for x in text)
 

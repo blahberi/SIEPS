@@ -5,7 +5,6 @@ image = input("image: ")
 image_matrix = cv2.imread(image)
 EOF = "<!EOF!>"
 EOF_binary = "00111100001000010100010101001111010001100010000100111110" # <!EOF!> in binary
-
 res = ""
 binary = ""
 done = False
@@ -33,4 +32,15 @@ binary = [binary[i:i + 8] for i in range(0, len(binary), 8)]
 res = ""
 for byte in binary:
     res += chr((int(byte, 2)))
-print(res[:-len(EOF)])
+split = res.split(" split ")
+if len(split) == 1:
+    if done:
+        print(res[:-len(EOF)])
+    if not done:
+        print(res)
+if len(split) == 2:
+    f = open("decoded" + "." + split[0], "wb")
+    if done:
+        f.write(bytes(split[1][:-len(EOF)], "latin1"))
+    if not done:
+        f.write(bytes(split[1], "latin1"))
