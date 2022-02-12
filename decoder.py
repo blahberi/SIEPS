@@ -12,19 +12,24 @@ done = False
 for row in image_matrix:
     for pixel in row:
         rgb = pixel[2], pixel[1], pixel[0]
-
-        for color in rgb:
-            binary += np.binary_repr(color)[-1:]
-            if binary[-len(EOF_binary):] == EOF_binary:
-                done = True
-                break
+        if np.array_equal(pixel, image_matrix[0][0]):
+            k = str(pixel[2]) + str(pixel[1]) + str(pixel[0])
+            k = int(k, 2)
+        else:
+            for color in rgb:
+                binary += np.binary_repr(color)[-k:]
+                if binary[-len(EOF_binary):] == EOF_binary:
+                    done = True
+                    break
         if done:
             break
     if done:
         break
 
+if not done:
+    print("Warning: no EOF found")
+
 binary = [binary[i:i + 8] for i in range(0, len(binary), 8)]
-print(binary)
 res = ""
 for byte in binary:
     res += chr((int(byte, 2)))
