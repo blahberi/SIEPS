@@ -7,7 +7,7 @@ if mode == "f":
     file = input("file to encode: ")
     f = open(file, "rb")
     t = file.split(".")[-1]
-    text = t + " split " + f.read().decode("latin1") + "<!EOF!>"
+    text = t + " split " + f.read().decode("latin-1") + "<!EOF!>"
     f.close()
 if mode == "t":
     text = input("text: ") + "<!EOF!>"
@@ -15,7 +15,6 @@ if mode != "f" and mode != "t":
     print("Error: no mode specified")
 
 binary_text = list(format(ord(x), 'b')for x in text)
-
 for byte in range(len(binary_text)):
     for i in range(8 - len(binary_text[byte])):
         byte_list = list(binary_text[byte])
@@ -23,7 +22,6 @@ for byte in range(len(binary_text)):
         binary_text[byte] = "".join(byte_list)
 
 binary_text = "".join(binary_text)
-
 image_matrix = cv2.imread(image)
 
 k = int(np.ceil(len(binary_text)/(image_matrix.shape[0]*image_matrix.shape[1]*image_matrix.shape[2])))

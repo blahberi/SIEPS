@@ -10,10 +10,10 @@ binary = ""
 done = False
 mode = input("is it encoded using the (b)ad method or the (g)ood method? ")
 if mode == "g":
-    for row in image_matrix:
-        for pixel in row:
+    for i, row in enumerate(image_matrix):
+        for j, pixel in enumerate(row):
             rgb = pixel[2], pixel[1], pixel[0]
-            if np.array_equal(pixel, image_matrix[0][0]):
+            if [i, j] == [0, 0]:
                 k = str(pixel[2])[-1] + str(pixel[1])[-1] + str(pixel[0])[-1]
                 k = int(k, 2)
             else:
@@ -55,7 +55,7 @@ if len(split) == 1:
 if len(split) == 2:
     f = open("decoded" + "." + split[0], "wb")
     if done:
-        f.write(bytes(split[1][:-len(EOF)], "latin1"))
+        f.write(split[1][:-len(EOF)].encode("latin-1"))
     if not done:
-        f.write(bytes(split[1], "latin1"))
-f.close()
+        f.write(split[1].encode("latin-1"))
+    f.close()
