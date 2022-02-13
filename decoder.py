@@ -1,13 +1,7 @@
 import cv2
 import numpy as np
 from Crypto.Cipher import AES
-import struct
 import base64
-def convert_string_to_bytes(string):
-    bytes = b''
-    for i in string:
-        bytes += struct.pack("B", ord(i))
-    return bytes
 image = input("image: ")
 image_matrix = cv2.imread(image)
 EOF = "<!EOF!>"
@@ -55,8 +49,7 @@ for byte in binary:
     res += chr((int(byte, 2)))
 if done:
     res = res[:-len(EOF)]
-if res[:11] == " encrypted ":
-    res = res[11:]
+if len(res.split(" split2 ")) > 1:
     key = base64.b64decode(input("key: "))
     nonce = res.split(" split2 ")[0]
     tag = res.split(" split2 ")[1]
@@ -68,5 +61,5 @@ if len(split) == 1:
     print(res)
 if len(split) == 2:
     f = open("decoded" + "." + split[0], "wb")
-    f.write(split[1].encode("latin-1"))
+    f.write(base64.b64decode(split[1]))
     f.close()
