@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 from Crypto.Cipher import AES
 import base64
+from pwinput import pwinput
+from Crypto.Hash import cSHAKE256
 image = input("image: ")
 image_matrix = cv2.imread(image)
 EOF = "<!EOF!>"
@@ -50,7 +52,9 @@ for byte in binary:
 if done:
     res = res[:-len(EOF)]
 if len(res.split(" split2 ")) > 1:
-    key = base64.b64decode(input("key: "))
+    key = pwinput(prompt="enter encryption password: ", mask="*").encode()
+    shake = cSHAKE256.new(data=key, custom=b'key')
+    key = shake.read(16)
     nonce = res.split(" split2 ")[0]
     tag = res.split(" split2 ")[1]
     ciphered_data = res.split(" split2 ")[2]

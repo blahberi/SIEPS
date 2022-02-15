@@ -1,8 +1,9 @@
 import cv2
 import numpy as np
 from Crypto.Cipher import AES
-from Crypto.Random import get_random_bytes
 import base64
+from pwinput import pwinput
+from Crypto.Hash import cSHAKE256
 
 image = input("image: ")
 mode = input("do you want to encode a (f)ile or (t)ext? ")
@@ -18,9 +19,11 @@ if mode == "f":
         file = input("file to encode: ")
         f = open(file, "rb")
         t = file.split(".")[-1]
-        key = get_random_bytes(16)
+        key = pwinput(prompt="enter encryption password: ", mask="*").encode()
+        shake = cSHAKE256.new(data=key, custom=b'key')
+        key = shake.read(16)
+        print("hash done")
         plaintext = (t + " split " + base64.b64encode(f.read()).decode()).encode("utf-8")
-        print("key: ", base64.b64encode(key).decode())
         cipher = AES.new(key, AES.MODE_EAX)
         ciphered_data, tag = cipher.encrypt_and_digest(plaintext)
         text = cipher.nonce.decode("latin-1") + " split2 " + tag.decode("latin-1") + " split2 " + ciphered_data.decode("latin-1") + "<!EOF!>"
@@ -29,8 +32,10 @@ if mode == "t":
         text = input("text: ") + "<!EOF!>"
     elif mode2 == "y":
         plain_text = input("text: ").encode("utf-8")
-        key = get_random_bytes(16)
-        print("key: ", base64.b64encode(key).decode())
+        key = pwinput(prompt="enter encryption password: ", mask="*").encode()
+        shake = cSHAKE256.new(data=key, custom=b'key')
+        key = shake.read(16)
+        print("hash done")
         cipher = AES.new(key, AES.MODE_EAX)
         ciphered_data, tag = cipher.encrypt_and_digest(plain_text)
         text = cipher.nonce.decode("latin-1") + " split2 " + tag.decode("latin-1") + " split2 " + ciphered_data.decode("latin-1") + "<!EOF!>"
