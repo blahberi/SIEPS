@@ -52,8 +52,7 @@ for byte in binary:
 if done:
     res = res[:-len(EOF)]
 if len(res.split(" split2 ")) > 1:
-    key = pwinput(prompt="enter encryption password: ", mask="*").encode()
-    shake = cSHAKE256.new(data=key, custom=b'key')
+    shake = cSHAKE256.new(data=pwinput(prompt="enter encryption password: ", mask="*").encode(), custom=b'key')
     key = shake.read(16)
     nonce = res.split(" split2 ")[0]
     tag = res.split(" split2 ")[1]
@@ -67,3 +66,4 @@ if len(split) == 2:
     f = open("decoded" + "." + split[0], "wb")
     f.write(base64.b64decode(split[1]))
     f.close()
+input("press enter to exit")

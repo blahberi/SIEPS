@@ -19,10 +19,8 @@ if mode == "f":
         file = input("file to encode: ")
         f = open(file, "rb")
         t = file.split(".")[-1]
-        key = pwinput(prompt="enter encryption password: ", mask="*").encode()
-        shake = cSHAKE256.new(data=key, custom=b'key')
+        shake = cSHAKE256.new(data=pwinput(prompt="enter encryption password: ", mask="*").encode(), custom=b'key')
         key = shake.read(16)
-        print("hash done")
         plaintext = (t + " split " + base64.b64encode(f.read()).decode()).encode("utf-8")
         cipher = AES.new(key, AES.MODE_EAX)
         ciphered_data, tag = cipher.encrypt_and_digest(plaintext)
@@ -32,10 +30,8 @@ if mode == "t":
         text = input("text: ") + "<!EOF!>"
     elif mode2 == "y":
         plain_text = input("text: ").encode("utf-8")
-        key = pwinput(prompt="enter encryption password: ", mask="*").encode()
-        shake = cSHAKE256.new(data=key, custom=b'key')
+        shake = cSHAKE256.new(data=pwinput(prompt="enter encryption password: ", mask="*").encode(), custom=b'key')
         key = shake.read(16)
-        print("hash done")
         cipher = AES.new(key, AES.MODE_EAX)
         ciphered_data, tag = cipher.encrypt_and_digest(plain_text)
         text = cipher.nonce.decode("latin-1") + " split2 " + tag.decode("latin-1") + " split2 " + ciphered_data.decode("latin-1") + "<!EOF!>"
@@ -92,3 +88,4 @@ for i in range(1, len(binary_text) + 1):
     image_matrix[i // len(image_matrix[0])][i % len(image_matrix[0])][0] = b
 
 cv2.imwrite("output.png", image_matrix)
+input("press enter to exit")
