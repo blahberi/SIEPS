@@ -7,7 +7,7 @@ from Crypto.Hash import cSHAKE256
 image = input("image: ")
 image_matrix = cv2.imread(image)
 EOF = "<!EOF!>"
-EOF_binary = "00111100001000010100010101001111010001100010000100111110" # <!EOF!> in binary
+EOF_binary = "00111100001000010100010101001111010001100010000100111110"  # <!EOF!> in binary
 res = ""
 binary = ""
 done = False
@@ -18,7 +18,7 @@ if mode == "g":
             rgb = pixel[2], pixel[1], pixel[0]
             if [i, j] == [0, 0]:
                 k = str(pixel[2])[-1] + str(pixel[1])[-1] + str(pixel[0])[-1]
-                k = int(k, 2)
+                k = int(k, 2) + 1
             else:
                 for color in rgb:
                     binary += np.binary_repr(color)[-k:]

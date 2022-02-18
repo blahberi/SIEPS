@@ -48,8 +48,8 @@ for byte in range(len(binary_text)):
 binary_text = "".join(binary_text)
 image_matrix = cv2.imread(image)
 
-k = int(np.ceil(len(binary_text)/(image_matrix.shape[0]*image_matrix.shape[1]*image_matrix.shape[2])))
-if k > 8:
+k = int(np.ceil(len(binary_text)/(image_matrix.shape[0]*image_matrix.shape[1]*image_matrix.shape[2]))) - 1
+if k > 7:
     print("Error: encoded file too big")
     exit()
 
