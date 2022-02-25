@@ -4,66 +4,88 @@ from Crypto.Cipher import AES
 import base64
 from pwinput import pwinput
 from Crypto.Hash import cSHAKE256
-image = input("image: ")
-image_matrix = cv2.imread(image)
-EOF = "<!EOF!>"
-EOF_binary = "00111100001000010100010101001111010001100010000100111110"  # <!EOF!> in binary
-res = ""
-binary = ""
-done = False
-mode = input("is it encoded using the (b)ad method or the (g)ood method? ")
-if mode == "g":
-    for i, row in enumerate(image_matrix):
-        for j, pixel in enumerate(row):
-            rgb = pixel[2], pixel[1], pixel[0]
-            if [i, j] == [0, 0]:
-                k = str(pixel[2])[-1] + str(pixel[1])[-1] + str(pixel[0])[-1]
-                k = int(k, 2) + 1
-            else:
-                for color in rgb:
-                    binary += np.binary_repr(color)[-k:]
-                    if binary[-len(EOF_binary):] == EOF_binary:
-                        done = True
-                        break
-            if done:
-                break
-        if done:
-            break
-if mode == "b":
-    for row in image_matrix:
-        for pixel in row:
-            rgb = pixel[2], pixel[1], pixel[0]
-            for color in rgb:
-                binary += np.binary_repr(color)[-1:]
-                if binary[-len(EOF_binary):] == EOF_binary:
-                    done = True
-                    break
-            if done:
-                break
-        if done:
-            break
-if not done:
-    print("Warning: no EOF found")
 
-binary = [binary[i:i + 8] for i in range(0, len(binary), 8)]
-res = ""
-for byte in binary:
-    res += chr((int(byte, 2)))
-if done:
-    res = res[:-len(EOF)]
-if len(res.split(" split2 ")) > 1:
-    shake = cSHAKE256.new(data=pwinput(prompt="enter encryption password: ", mask="*").encode(), custom=b'key')
-    key = shake.read(16)
-    nonce = res.split(" split2 ")[0]
-    tag = res.split(" split2 ")[1]
-    ciphered_data = res.split(" split2 ")[2]
-    cipher = AES.new(key, AES.MODE_EAX, nonce.encode("latin-1"))
-    res = cipher.decrypt_and_verify(ciphered_data.encode("latin-1"), tag.encode("latin-1")).decode("utf-8")
-split = res.split(" split ")
-if len(split) == 1:
-    print(res)
-if len(split) == 2:
-    f = open("decoded" + "." + split[0], "wb")
-    f.write(base64.b64decode(split[1]))
-    f.close()
+image = input("image: ")
+mode = input("do you want to encode a (f)ile or (t)ext? ")
+mode2 = input("do you want to encrypt (y or n)? ")
+if mode == "f":
+    if mode2 == "n":
+        file = input("file to encode: ")
+        f = open(file, "rb")
+        t = file.split(".")[-1]
+        text = t + " split " + base64.b64encode(f.read()).decode() + "<!EOF!>"
+        f.close()
+    elif mode2 == "y":
+        file = input("file to encode: ")
+        f = open(file, "rb")
+        t = file.split(".")[-1]
+        shake = cSHAKE256.new(data=pwinput(prompt="enter encryption password: ", mask="*").encode(), custom=b'key')
+        key = shake.read(16)
+        plaintext = (t + " split " + base64.b64encode(f.read()).decode()).encode("utf-8")
+        cipher = AES.new(key, AES.MODE_EAX)
+        ciphered_data, tag = cipher.encrypt_and_digest(plaintext)
+        text = cipher.nonce.decode("latin-1") + " split2 " + tag.decode("latin-1") + " split2 " + ciphered_data.decode("latin-1") + "<!EOF!>"
+if mode == "t":
+    if mode2 == "n":
+        text = input("text: ") + "<!EOF!>"
+    elif mode2 == "y":
+        plain_text = input("text: ").encode("utf-8")
+        shake = cSHAKE256.new(data=pwinput(prompt="enter encryption password: ", mask="*").encode(), custom=b'key')
+        key = shake.read(16)
+        cipher = AES.new(key, AES.MODE_EAX)
+        ciphered_data, tag = cipher.encrypt_and_digest(plain_text)
+        text = cipher.nonce.decode("latin-1") + " split2 " + tag.decode("latin-1") + " split2 " + ciphered_data.decode("latin-1") + "<!EOF!>"
+if (mode != "f" and mode != "t") or (mode2 != "y" and mode2 != "n"):
+    print("Error: no mode specified")
+
+binary_text = list(format(ord(x), 'b')for x in text)
+for byte in range(len(binary_text)):
+    for i in range(8 - len(binary_text[byte])):
+        byte_list = list(binary_text[byte])
+        byte_list.insert(0, "0")
+        binary_text[byte] = "".join(byte_list)
+
+binary_text = "".join(binary_text)
+image_matrix = cv2.imread(image)
+
+k = int(np.ceil(len(binary_text)/(image_matrix.shape[0]*image_matrix.shape[1]*image_matrix.shape[2]))) - 1
+if k > 7:
+    print("Error: encoded file too big")
+    exit()
+
+binary_text = [binary_text[start:start+3*(k+1)] for start in range(0, len(binary_text), 3*(k+1))]
+
+for i in range(len(binary_text)):
+    binary_text[i] = [binary_text[i][start:start + k + 1] for start in range(0, len(binary_text[i]), k + 1)]
+
+bin_k = np.binary_repr(k)
+
+while len(bin_k) < 3:
+    bin_k = "0" + bin_k
+image_matrix[0][0][2] = str(image_matrix[0][0][2])[:-1] + str(bin_k[0])
+image_matrix[0][0][1] = str(image_matrix[0][0][1])[:-1] + str(bin_k[1])
+image_matrix[0][0][0] = str(image_matrix[0][0][0])[:-1] + str(bin_k[2])
+
+for i in range(1, len(binary_text) + 1):
+    r = list(np.binary_repr(image_matrix[i // len(image_matrix[0])][i % len(image_matrix[0])][2]))
+    g = list(np.binary_repr(image_matrix[i // len(image_matrix[0])][i % len(image_matrix[0])][1]))
+    b = list(np.binary_repr(image_matrix[i // len(image_matrix[0])][i % len(image_matrix[0])][0]))
+
+    rgb = r, g, b
+    for j in range(len(binary_text[i-1])):
+        rgb[j][-k:] = binary_text[i-1][j]
+
+    r = "".join(r)
+    g = "".join(g)
+    b = "".join(b)
+
+    r = int(r, 2)
+    g = int(g, 2)
+    b = int(b, 2)
+
+    image_matrix[i // len(image_matrix[0])][i % len(image_matrix[0])][2] = r
+    image_matrix[i // len(image_matrix[0])][i % len(image_matrix[0])][1] = g
+    image_matrix[i // len(image_matrix[0])][i % len(image_matrix[0])][0] = b
+
+cv2.imwrite("output.png", image_matrix)
 input("press enter to exit")
