@@ -11,19 +11,19 @@ class Protocol:
         if self.use_different_encoding:
             self.encoding = encoding
 
-    # def read_protocol(self, image):
-    #     pixels = image[0][0], image[0][1]
-    #
-    #     self.use_more_bits = np.binary_repr(pixels[0][2])[-1]
-    #     self.encrypt = np.binary_repr(pixels[0][1])[-1]
-    #     self.use_different_encoding = np.binary_repr(pixels[0][0])[-1]
-    #
-    #     if self.use_different_encoding:
-    #         r = np.binary_repr(pixels[1][2])[-1]
-    #         g = np.binary_repr(pixels[1][1])[-1]
-    #         b = np.binary_repr(pixels[1][0])[-1]
-    #
-    #         self.encoding = self.encodings[int(r+g+b, 2)]
+    def read_protocol(self, image):
+        pixels = image[0][0], image[0][1]
+
+        self.use_more_bits = np.binary_repr(pixels[0][2])[-1]
+        self.encrypt = np.binary_repr(pixels[0][1])[-1]
+        self.use_different_encoding = np.binary_repr(pixels[0][0])[-1]
+
+        if self.use_different_encoding:
+            r = np.binary_repr(pixels[1][2])[-1]
+            g = np.binary_repr(pixels[1][1])[-1]
+            b = np.binary_repr(pixels[1][0])[-1]
+
+            self.encoding = self.encodings[int(r+g+b, 2)]
     #
     # def write_protocol(self, image):
     #     pixels = image[0][0], image[0][1]
