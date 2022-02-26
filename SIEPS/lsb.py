@@ -2,25 +2,29 @@ import cv2
 import numpy as np
 import base64
 from .protocol import Protocol
+from .AES.aes import AESCipher
 
 EOF = "<!EOF!>"
 EOF_binary = "00111100001000010100010101001111010001100010000100111110"  # <!EOF!> in binary
 
 class LSB:
     @staticmethod
-    def encode(data, image, protocol):
-        binary_text = ""
+    def encode(data, image, protocol, AESkey=None):
+        bytes = None
         if protocol.encoding == "ASCII":
-            binary_text = list(format(ord(i), 'b') for i in data)
+            bytes = data.encode()
         elif protocol.encoding == "base64":
             bytes = base64.b64decode(data)
-            binary_text = ["{:08b}".format(i) for i in bytes]
         elif protocol.encoding == "file":
             with open(data, "rb") as f:
                 bytes = f.read()
-                binary_text = ["{:08b}".format(i) for i in bytes]
         else:
             return
+
+        if protocol.encrypt:
+            bytes = AESCipher(AESkey).encrypt(bytes.decode())
+
+        binary_text = ["{:08b}".format(i) for i in bytes]
 
         for byte in range(len(binary_text)):
             for i in range(8 - len(binary_text[byte])):
@@ -32,7 +36,6 @@ class LSB:
         if protocol.use_more_bits:
             binary_text = [binary_text[i:i + 2] for i in range(0, len(binary_text), 2)]
         binary_text = [binary_text[i:i + 3] for i in range(0, len(binary_text), 3)]
-        print(binary_text)
         for i in range(2):
             binary_text.insert(0, None)
 
@@ -67,7 +70,7 @@ class LSB:
         cv2.imwrite("encoded.png", image_matrix)
 
     @staticmethod
-    def decode(image):
+    def decode(image, AESkey=None):
         image_matrix = cv2.imread(image)
 
         protocol = Protocol()
@@ -90,17 +93,19 @@ class LSB:
             if done:
                 break
 
-        res = ""
         if protocol.use_more_bits:
             binary = binary[12:-len(EOF_binary)]
         else:
             binary = binary[6:-len(EOF_binary)]
+
+        bytes = int(binary, 2).to_bytes(len(binary) // 8, byteorder='big')
+
+        if protocol.encrypt:
+            bytes = AESCipher(AESkey).decrypt(bytes)
+
         if protocol.encoding == "ASCII":
-            binary = [binary[i:i + 8] for i in range(0, len(binary), 8)]
-            for byte in binary:
-                res += chr((int(byte, 2)))
+            return bytes.decode()
         elif protocol.encoding == "base64":
-            bytes = int(binary, 2).to_bytes(len(binary) // 8, byteorder='big')
             res = base64.b64encode(bytes).decode()
         # elif protocol.encoding == "file":
         #     with open("decoded", "wb") as f:
@@ -108,4 +113,3 @@ class LSB:
         #         f.write(bytes)
         else:
             return
-        return res
