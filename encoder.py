@@ -53,10 +53,10 @@ if k > 7:
     print("Error: encoded file too big")
     exit()
 
-binary_text = [binary_text[start:start+3*k] for start in range(0, len(binary_text), 3*k)]
+binary_text = [binary_text[start:start+3*(k+1)] for start in range(0, len(binary_text), 3*(k+1))]
 
 for i in range(len(binary_text)):
-    binary_text[i] = [binary_text[i][start:start + k] for start in range(0, len(binary_text[i]), k)]
+    binary_text[i] = [binary_text[i][start:start + k + 1] for start in range(0, len(binary_text[i]), k + 1)]
 
 bin_k = np.binary_repr(k)
 
