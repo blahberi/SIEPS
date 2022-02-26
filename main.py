@@ -1,4 +1,6 @@
 from SIEPS.lsb import LSB
+from SIEPS.protocol import Protocol
 
-#LSB.encode("uAtbK6WZV00yJ3lnXpeEZGr+u6YcRBgW9oYLwrXHXg4QNeapoOD3FdMB8rJK5+wz", "unknown.png", "base64")
-print(LSB.decode("encoded.png", "base64"))
+protocol = Protocol(use_more_bits=True)
+LSB.encode("Hello World!", "unknown.png", protocol)
+print(LSB.decode("encoded.png"))
