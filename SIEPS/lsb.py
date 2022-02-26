@@ -7,13 +7,17 @@ EOF_binary = "00111100001000010100010101001111010001100010000100111110" # <!EOF!
 
 class LSB:
     @staticmethod
-    def encode(text, image, encoding="ascii"):
+    def encode(data, image, encoding="ascii"):
         binary_text = ""
         if encoding == "ascii":
-            binary_text = list(format(ord(x), 'b') for x in text)
+            binary_text = list(format(ord(i), 'b') for i in data)
         elif encoding == "base64":
-            binary = base64.b64decode(text)
-            binary_text = ["{:08b}".format(x) for x in binary]
+            bytes = base64.b64decode(data)
+            binary_text = ["{:08b}".format(i) for i in bytes]
+        elif encoding == "file":
+            with open(data, "rb") as f:
+                bytes = f.read()
+                binary_text = ["{:08b}".format(i) for i in bytes]
         else:
             return
 
@@ -48,7 +52,7 @@ class LSB:
             image_matrix[i // len(image_matrix[0])][i % len(image_matrix[0])][1] = g
             image_matrix[i // len(image_matrix[0])][i % len(image_matrix[0])][0] = b
 
-        cv2.imwrite("output.png", image_matrix)
+        cv2.imwrite("encoded.png", image_matrix)
 
     @staticmethod
     def decode(image, encoding="ascii"):
@@ -79,4 +83,10 @@ class LSB:
         elif encoding == "base64":
             bytes = int(binary, 2).to_bytes(len(binary) // 8, byteorder='big')
             res = base64.b64encode(bytes).decode()
+        elif encoding == "file":
+            with open("decoded", "wb") as f:
+                bytes = int(binary, 2).to_bytes(len(binary) // 8, byteorder='big')
+                f.write(bytes)
+        else:
+            return
         return res
