@@ -2,14 +2,13 @@ import cv2
 import numpy as np
 
 class Protocol:
-    def __init__(self, use_more_bits=False, encrypt=False, use_different_encoding=False, encoding="ASCII"):
+    def __init__(self, use_more_bits=False, encrypt=False, use_different_encoding=False, encoding="ASCII", custom_encoding=None):
         self.use_more_bits = use_more_bits  # use the 2 lsb instead of just 1 lsb
         self.encrypt = encrypt  # encrypt with AES 256
         self.use_different_encoding = use_different_encoding  # use an encoding different from the default(ASCII)
-        self.encoding = encoding
         self.encodings = ["base64", "png", "jpg", "mp4", "pdf" "exe", "zip", "custom"]
-        if self.use_different_encoding:
-            self.encoding = encoding
+        self.encoding = encoding
+        self.custom_encoding = custom_encoding
 
     def read_protocol(self, image):
         pixels = image[0][0], image[0][1]

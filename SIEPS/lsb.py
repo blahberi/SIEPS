@@ -6,6 +6,20 @@ from .AES.aes import AESCipher
 
 EOF = "<!EOF!>"
 EOF_binary = "00111100001000010100010101001111010001100010000100111110"  # <!EOF!> in binary
+ENCODING = "<!ENCODING!>"
+ENCODING_binary = "001111000010000101000101010011100100001101001111010001000100100101001110010001110010000100111110"  #<!ENCODING!> in binary
+
+
+def binary_to_bytes(binary_string):
+    bytes_string = [binary_string[i:i + 8] for i in range(0, len(binary_string), 8)]
+    bytes_array = []
+    for byte_string in bytes_string:
+        bytes_array.append(int(byte_string, 2))
+        print(int(byte_string, 2))
+    bytes_array = bytearray(bytes_array)
+    res = bytes(bytes_array)
+    return res
+
 
 class LSB:
     @staticmethod
@@ -15,14 +29,17 @@ class LSB:
             bytes = data.encode()
         elif protocol.encoding == "base64":
             bytes = base64.b64decode(data)
-        elif protocol.encoding == "file":
+        elif protocol.encoding in ("png", "jpg", "mp4", "pdf" "exe", "zip"):
             with open(data, "rb") as f:
                 bytes = f.read()
-        else:
-            return
-
+        elif protocol.encoding == "custom":
+            with open(data, "rb") as f:
+                bytes = f.read()
         if protocol.encrypt:
             bytes = AESCipher(AESkey).encrypt(bytes.decode())
+
+        if protocol.encoding == "custom":
+            bytes = protocol.custom_encoding.encode() + ENCODING.encode() + bytes
 
         binary_text = ["{:08b}".format(i) for i in bytes]
 
@@ -40,6 +57,8 @@ class LSB:
             binary_text.insert(0, None)
 
         image_matrix = cv2.imread(image)
+        if image_matrix is None:
+            return False
 
         protocol.write_protocol(image_matrix)
 
@@ -98,18 +117,36 @@ class LSB:
         else:
             binary = binary[6:-len(EOF_binary)]
 
-        bytes = int(binary, 2).to_bytes(len(binary) // 8, byteorder='big')
+        custom_encoding_bytes = None
+        if protocol.use_different_encoding:
+            if protocol.encoding == "custom":
+                custom_encoding_binary = binary[:binary.find(ENCODING_binary)]
+                print(custom_encoding_binary)
+                custom_encoding_bytes = binary_to_bytes(custom_encoding_binary)
+                print(custom_encoding_bytes)
+                binary = binary[binary.find(ENCODING_binary) + len(ENCODING_binary):]
+
+        _bytes = binary_to_bytes(binary)
 
         if protocol.encrypt:
-            bytes = AESCipher(AESkey).decrypt(bytes)
+            _bytes = AESCipher(AESkey).decrypt(_bytes)
+
+        if protocol.use_different_encoding:
+            if protocol.encoding == "custom":
+                protocol.custom_encoding = custom_encoding_bytes.decode()
+
 
         if protocol.encoding == "ASCII":
-            return bytes.decode()
+            return _bytes.decode()
         elif protocol.encoding == "base64":
-            res = base64.b64encode(bytes).decode()
-        # elif protocol.encoding == "file":
-        #     with open("decoded", "wb") as f:
-        #         bytes = int(binary, 2).to_bytes(len(binary) // 8, byteorder='big')
-        #         f.write(bytes)
+            return base64.b64encode(_bytes).decode()
+        elif protocol.encoding in ("png", "jpg", "mp4", "pdf" "exe", "zip"):
+            with open(f"output.{protocol.encoding}", "wb") as f:
+                f.write(_bytes)
+        elif protocol.encoding == "custom":
+            with open(f"output.{protocol.custom_encoding}", "wb") as f:
+                f.write(_bytes)
+        if protocol.encrypt:
+            _bytes = AESCipher(AESkey).encrypt(_bytes.decode())
         else:
             return

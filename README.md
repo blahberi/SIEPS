@@ -1,1 +1,1 @@
-hide data in plane sight with steganography
+hide data in plain sight with steganography
