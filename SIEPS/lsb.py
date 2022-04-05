@@ -144,6 +144,6 @@ class LSB:
             with open(f"output.{protocol.custom_encoding}", "wb") as f:
                 f.write(_bytes)
         if protocol.encrypt:
-            _bytes = AESCipher(AESkey).encrypt(_bytes.decode())
+            _bytes = AESCipher(AESkey).encrypt(_bytes)
         else:
             return
