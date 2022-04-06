@@ -35,7 +35,7 @@ class LSB:
             with open(data, "rb") as f:
                 bytes = f.read()
         if protocol.encrypt:
-            bytes = AESCipher(AESkey).encrypt(bytes)
+            bytes = AESCipher(AESkey).encrypt(bytes.decode())
 
         if protocol.encoding == "custom":
             bytes = protocol.custom_encoding.encode() + ENCODING.encode() + bytes
@@ -100,9 +100,13 @@ class LSB:
             for pixel in row:
                 rgb = pixel[2], pixel[1], pixel[0]
                 for color in rgb:
+                    color = np.binary_repr(color)
+                    while len(color) < 8:
+                        color = "0" + color
                     if protocol.use_more_bits:
-                        binary += np.binary_repr(color)[-2]
-                    binary += np.binary_repr(color)[-1]
+                        print(color)
+                        binary += color[-2]
+                    binary += color[-1]
                     if binary[-len(EOF_binary):] == EOF_binary:
                         done = True
                         break
@@ -144,6 +148,6 @@ class LSB:
             with open(f"output.{protocol.custom_encoding}", "wb") as f:
                 f.write(_bytes)
         if protocol.encrypt:
-            _bytes = AESCipher(AESkey).encrypt(_bytes)
+            _bytes = AESCipher(AESkey).encrypt(_bytes.decode())
         else:
             return
