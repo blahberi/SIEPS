@@ -1,6 +1,6 @@
-from Crypto.Util.Padding import pad, unpad
 from Crypto import Random
 from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad, unpad
 
 class AESCipher(object):
 
@@ -9,7 +9,7 @@ class AESCipher(object):
         self.key = key
 
     def encrypt(self, raw):
-        raw = pad(raw, AES.block_size)
+        raw = pad(raw, 16)
         iv = Random.new().read(AES.block_size)
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
         return iv + cipher.encrypt(raw)
@@ -17,4 +17,4 @@ class AESCipher(object):
     def decrypt(self, enc):
         iv = enc[:AES.block_size]
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
-        return unpad(cipher.decrypt(enc[AES.block_size:]), AES.block_size)
+        return unpad(cipher.decrypt(enc[AES.block_size:]), 16)

@@ -96,13 +96,18 @@ class LSB:
 
         binary = ""
         done = False
+        if image_matrix is None:
+            return
         for row in image_matrix:
             for pixel in row:
                 rgb = pixel[2], pixel[1], pixel[0]
                 for color in rgb:
+                    color = np.binary_repr(color)
+                    while len(color) < 8:
+                        color = "0" + color
                     if protocol.use_more_bits:
-                        binary += np.binary_repr(color)[-2]
-                    binary += np.binary_repr(color)[-1]
+                        binary += color[-2]
+                    binary += color[-1]
                     if binary[-len(EOF_binary):] == EOF_binary:
                         done = True
                         break
