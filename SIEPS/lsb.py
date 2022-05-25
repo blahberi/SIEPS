@@ -4,13 +4,11 @@ import base64
 from .protocol import Protocol
 from .AES.aes import AESCipher
 import zlib
-from hamming_check import Hamming
 
 EOF = "<!EOF!>"
 EOF_binary = "00111100001000010100010101001111010001100010000100111110"  # <!EOF!> in binary
 ENCODING = "<!ENCODING!>"
 ENCODING_binary = "001111000010000101000101010011100100001101001111010001000100100101001110010001110010000100111110"  #<!ENCODING!> in binary
-hamming = Hamming()
 
 
 def binary_to_bytes(binary_string):
