@@ -8,7 +8,7 @@ import zlib
 EOF = "<!EOF!>"
 EOF_binary = "00111100001000010100010101001111010001100010000100111110"  # <!EOF!> in binary
 ENCODING = "<!ENCODING!>"
-ENCODING_binary = "001111000010000101000101010011100100001101001111010001000100100101001110010001110010000100111110"  #<!ENCODING!> in binary
+ENCODING_binary = "001111000010000101000101010011100100001101001111010001000100100101001110010001110010000100111110"  # <!ENCODING!> in binary
 
 
 def binary_to_bytes(binary_string):
@@ -24,26 +24,32 @@ def binary_to_bytes(binary_string):
 class LSB:
     @staticmethod
     def encode(data, image, protocol, AESkey=None):
-        bytes = None
+        _bytes = None
         if protocol.encoding == "ASCII":
-            bytes = data.encode()
+            _bytes = data.encode()
         elif protocol.encoding == "base64":
-            bytes = base64.b64decode(data)
+            _bytes = base64.b64decode(data)
         elif protocol.encoding in ("png", "jpg", "mp4", "pdf" "exe", "zip"):
             with open(data, "rb") as f:
-                bytes = f.read()
+                _bytes = f.read()
         elif protocol.encoding == "custom":
             with open(data, "rb") as f:
-                bytes = f.read()
+                _bytes = f.read()
         if protocol.encrypt:
-            bytes = AESCipher(AESkey).encrypt(bytes)
-
-        bytes = zlib.compress(bytes, 9)
+            _bytes = AESCipher(AESkey).encrypt(_bytes)
+        sussy_bytes = zlib.compress(_bytes, 9)
+        if protocol.compress == "auto":
+            if len(sussy_bytes) < len(_bytes):
+                protocol.compress = True
+            else:
+                protocol.compress = False
+        if protocol.compress:
+            _bytes = sussy_bytes
 
         if protocol.encoding == "custom":
-            bytes = protocol.custom_encoding.encode() + ENCODING.encode() + bytes
+            _bytes = protocol.custom_encoding.encode() + ENCODING.encode() + _bytes
 
-        binary_text = ["{:08b}".format(i) for i in bytes]
+        binary_text = ["{:08b}".format(i) for i in _bytes]
 
         for byte in range(len(binary_text)):
             for i in range(8 - len(binary_text[byte])):
@@ -51,11 +57,10 @@ class LSB:
                 byte_list.insert(0, "0")
                 binary_text[byte] = "".join(byte_list)
 
-        binary_text = "".join(binary_text)+EOF_binary
-        if protocol.use_more_bits:
-            binary_text = [binary_text[i:i + 2] for i in range(0, len(binary_text), 2)]
+        binary_text = "".join(binary_text) + EOF_binary
+        binary_text = [binary_text[i:i + protocol.bits] for i in range(0, len(binary_text), protocol.bits)]
         binary_text = [binary_text[i:i + 3] for i in range(0, len(binary_text), 3)]
-        for i in range(2):
+        for i in range(3):
             binary_text.insert(0, None)
 
         image_matrix = cv2.imread(image)
@@ -64,17 +69,18 @@ class LSB:
 
         protocol.write_protocol(image_matrix)
 
-        for i in range(2, len(binary_text)):
+        for i in range(3, len(binary_text)):
             r = list(np.binary_repr(image_matrix[i // len(image_matrix[0])][i % len(image_matrix[0])][2]))
             g = list(np.binary_repr(image_matrix[i // len(image_matrix[0])][i % len(image_matrix[0])][1]))
             b = list(np.binary_repr(image_matrix[i // len(image_matrix[0])][i % len(image_matrix[0])][0]))
 
             rgb = r, g, b
             for j in range(len(binary_text[i])):
-                if protocol.use_more_bits:
-                    rgb[j][-2:] = binary_text[i][j]
+                binary_text[i][j] = binary_text[i][j][::-1]
+                if len(binary_text[i][j][::-1]) < protocol.bits:
+                    rgb[j][-1 * len(binary_text):] = binary_text[i][j]
                 else:
-                    rgb[j][-1] = binary_text[i][j]
+                    rgb[j][-1*protocol.bits:] = binary_text[i][j]
 
             r = "".join(r)
             g = "".join(g)
@@ -107,22 +113,20 @@ class LSB:
                 for color in rgb:
                     color = np.binary_repr(color)
                     while len(color) < 8:
-                        color = "0" + color
-                    if protocol.use_more_bits:
-                        binary += color[-2]
-                    binary += color[-1]
-                    if binary[-len(EOF_binary):] == EOF_binary:
-                        done = True
+                        color = f"0{color}"
+                    for i in range(protocol.bits):
+                        binary += color[-1 * (i + 1)]
+                        if binary[-len(EOF_binary):] == EOF_binary:
+                            done = True
+                            break
+                    if done:
                         break
                 if done:
                     break
             if done:
                 break
 
-        if protocol.use_more_bits:
-            binary = binary[12:-len(EOF_binary)]
-        else:
-            binary = binary[6:-len(EOF_binary)]
+        binary = binary[9*protocol.bits:-len(EOF_binary)]
 
         custom_encoding_bytes = None
         if protocol.use_different_encoding:
@@ -132,15 +136,14 @@ class LSB:
                 binary = binary[binary.find(ENCODING_binary) + len(ENCODING_binary):]
 
         _bytes = binary_to_bytes(binary)
-        _bytes = zlib.decompress(_bytes)
-
+        if protocol.compress:
+            _bytes = zlib.decompress(_bytes)
         if protocol.encrypt:
             _bytes = AESCipher(AESkey).decrypt(_bytes)
 
         if protocol.use_different_encoding:
             if protocol.encoding == "custom":
                 protocol.custom_encoding = custom_encoding_bytes.decode()
-
 
         if protocol.encoding == "ASCII":
             return _bytes.decode()
