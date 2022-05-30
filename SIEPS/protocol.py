@@ -3,7 +3,7 @@ import numpy as np
 
 class Protocol:
     def __init__(self, compress="auto", encrypt=False, use_different_encoding=False, encoding="ASCII",
-                 custom_encoding=None, bits=1):
+                 custom_encoding=None, bits="auto"):
         self.compress = compress  # use the 2 lsb instead of just 1 lsb
         self.encrypt = encrypt  # encrypt with AES 256
         self.use_different_encoding = use_different_encoding  # use an encoding different from the default(ASCII)

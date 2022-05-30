@@ -25,6 +25,9 @@ class LSB:
     @staticmethod
     def encode(data, image, protocol, AESkey=None):
         _bytes = None
+        image_matrix = cv2.imread(image)
+        if image_matrix is None:
+            return False
         if protocol.encoding == "ASCII":
             _bytes = data.encode()
         elif protocol.encoding == "base64":
@@ -58,14 +61,13 @@ class LSB:
                 binary_text[byte] = "".join(byte_list)
 
         binary_text = "".join(binary_text) + EOF_binary
+        if protocol.bits == "auto":
+            protocol.bits = int(np.ceil(len(binary_text)/(image_matrix.shape[0]*image_matrix.shape[1]*image_matrix.shape[2])))
+            print(protocol.bits)
         binary_text = [binary_text[i:i + protocol.bits] for i in range(0, len(binary_text), protocol.bits)]
         binary_text = [binary_text[i:i + 3] for i in range(0, len(binary_text), 3)]
         for i in range(3):
             binary_text.insert(0, None)
-
-        image_matrix = cv2.imread(image)
-        if image_matrix is None:
-            return False
 
         protocol.write_protocol(image_matrix)
 
