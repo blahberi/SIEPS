@@ -63,7 +63,6 @@ class LSB:
         binary_text = "".join(binary_text) + EOF_binary
         if protocol.bits == "auto":
             protocol.bits = int(np.ceil(len(binary_text)/(image_matrix.shape[0]*image_matrix.shape[1]*image_matrix.shape[2])))
-            print(protocol.bits)
         binary_text = [binary_text[i:i + protocol.bits] for i in range(0, len(binary_text), protocol.bits)]
         binary_text = [binary_text[i:i + 3] for i in range(0, len(binary_text), 3)]
         for i in range(3):
