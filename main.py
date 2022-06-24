@@ -1,4 +1,9 @@
-from steganography.lsb import LSB
+import os
 
-LSB.encode("uAtbK6WZV00yJ3lnXpeEZGr+u6YcRBgW9oYLwrXHXg4QNeapoOD3FdMB8rJK5+wz", "unknown.png", "base64")
-print(LSB.decode("output.png", "base64"))
+from SIEPS.lsb import LSB
+from SIEPS.protocol import Protocol
+
+protocol = Protocol(use_different_encoding=True, encrypt=True, encoding="custom", custom_encoding="md")
+key = os.urandom(32)
+LSB.encode("README.md", "unknown.png", protocol, AESkey=key)
+print(LSB.decode("encoded.png", AESkey=key))
