@@ -7,7 +7,7 @@ class Protocol:
         self.compress = compress  # use the 2 lsb instead of just 1 lsb
         self.encrypt = encrypt  # encrypt with AES 256
         self.use_different_encoding = use_different_encoding  # use an encoding different from the default(ASCII)
-        self.encodings = ["base64", "png", "jpg", "mp4", "pdf" "exe", "zip", "custom"]
+        self.encodings = ["base64", "png", "binary", "mp4", "pdf" "exe", "zip", "custom"]
         self.encoding = encoding
         self.custom_encoding = custom_encoding
         self.bits = bits

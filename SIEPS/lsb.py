@@ -32,7 +32,9 @@ class LSB:
             _bytes = data.encode()
         elif protocol.encoding == "base64":
             _bytes = base64.b64decode(data)
-        elif protocol.encoding in ("png", "jpg", "mp4", "pdf" "exe", "zip"):
+        elif protocol.encoding == "binary":
+            _bytes = data
+        elif protocol.encoding in ("png", "mp4", "pdf" "exe", "zip"):
             with open(data, "rb") as f:
                 _bytes = f.read()
         elif protocol.encoding == "custom":
@@ -150,7 +152,9 @@ class LSB:
             return _bytes.decode()
         elif protocol.encoding == "base64":
             return base64.b64encode(_bytes).decode()
-        elif protocol.encoding in ("png", "jpg", "mp4", "pdf" "exe", "zip"):
+        elif protocol.encoding == "binary":
+            return _bytes
+        elif protocol.encoding in ("png", "mp4", "pdf" "exe", "zip"):
             with open(f"output.{protocol.encoding}", "wb") as f:
                 f.write(_bytes)
         elif protocol.encoding == "custom":
