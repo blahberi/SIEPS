@@ -114,9 +114,7 @@ class LSB:
             for pixel in row:
                 rgb = pixel[2], pixel[1], pixel[0]
                 for color in rgb:
-                    color = np.binary_repr(color)
-                    while len(color) < 8:
-                        color = f"0{color}"
+                    color = np.binary_repr(color, 8)
                     for i in range(protocol.bits):
                         binary += color[-1 * (i + 1)]
                         if binary[-len(EOF_binary):] == EOF_binary:

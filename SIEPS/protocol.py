@@ -84,9 +84,7 @@ class Protocol:
         g = list(np.binary_repr(pixels[2][1]))
         b = list(np.binary_repr(pixels[2][0]))
 
-        rgb = np.binary_repr(self.bits - 1)
-        while len(rgb) < 3:
-            rgb = f"0{rgb}"
+        rgb = np.binary_repr(self.bits - 1, 3)
         r[-1] = rgb[0]
         g[-1] = rgb[1]
         b[-1] = rgb[2]
